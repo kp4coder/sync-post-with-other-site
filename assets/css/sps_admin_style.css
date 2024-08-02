@@ -1,0 +1,34 @@
+.sps_input {
+	width: 400px;
+}
+
+.sps_select {
+	width: 500px;
+}
+
+.remove_site {
+	color: #ff0000;
+}
+
+.sps_password_box {
+	position: relative;
+	max-width: 400px
+}
+
+.sps_show_pass,
+.sps_hide_pass {
+	position: absolute;
+	right: 5px;
+	top: 5px;
+	cursor: pointer;
+}
+
+.sps_hide_pass {
+	display: none;
+}
+
+@media screen and (max-width: 768px){
+	.sps_password_box {
+		max-width: inherit;
+	}
+}

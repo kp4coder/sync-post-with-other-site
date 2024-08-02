@@ -1,4 +1,4 @@
-# sync-post-with-other-site
+=== Sync Post With Other Site ===
 Contributors: kp4coder
 Donate link: https://buymeacoffee.com/kp4coder
 Tags: wp sync post, sync post with multiple sites, post content sync, migrate post content, synchronization post
@@ -28,7 +28,7 @@ This plugin adds the following major features to WordPress:
 
 = Developers =
 
-Development takes place on [GitHub](https://github.com/kp4coder/sync-post-with-other-site). Patches welcome.
+Development takes place on [GitHub](https://github.com/zao-web/asset-queue-manager). Patches welcome.
 
 
 == Installation ==
@@ -109,3 +109,8 @@ No. WPSiteSync for Content will just synchronize with the one Post content which
 
 = 1.7 - July 31, 2024 =
 * Fix: Security Update of Authorization to Authenticated
+
+
+== Upgrade notice ==
+
+First release.
