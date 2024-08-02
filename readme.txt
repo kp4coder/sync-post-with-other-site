@@ -28,7 +28,7 @@ This plugin adds the following major features to WordPress:
 
 = Developers =
 
-Development takes place on [GitHub](https://github.com/zao-web/asset-queue-manager). Patches welcome.
+Development takes place on [GitHub](https://github.com/kp4coder/sync-post-with-other-site). Patches welcome.
 
 
 == Installation ==
