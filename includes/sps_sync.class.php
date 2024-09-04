@@ -51,6 +51,7 @@ if( !class_exists ( 'SPS_Sync' ) ) {
             $general_option = $sps_settings->sps_get_settings_func();
 
             if( !empty( $general_option ) && isset( $general_option['sps_host_name'] ) && !empty( $general_option['sps_host_name'] ) ) {
+                $response = array();
                 foreach ($general_option['sps_host_name'] as $sps_key => $sps_value) { 
 
                     $args['sps']['roles'] = isset( $general_option['sps_roles_allowed'][$sps_key]['roles'] ) ? $general_option['sps_roles_allowed'][$sps_key]['roles'] : array();
@@ -72,14 +73,16 @@ if( !class_exists ( 'SPS_Sync' ) ) {
                     $matched_role = array_intersect( $loggedin_user_role->roles, array_keys( $args['sps']['roles'] ) );
 
                     if( !empty($sps_value) && !empty($matched_role) && in_array($sps_value, $sps_website) ) {
-                        return $this->sps_remote_post( $action, $args );
+                        $response[$sps_key] = $this->sps_remote_post( $action, $args );
                     }
                 }
+                return $response;
             }
         }
 
         function sps_remote_post( $action, $args = array() ) {
             do_action( 'spsp_before_send_data', $args );
+            $args = apply_filters( 'spsp_before_send_data_args', $args );
             $args['sps_action'] = $action;
             $url = $args['sps']['host_name']."/wp-json/sps/v1/data"; 
             $return = wp_remote_post( $url, array( 'body' => $args ));
@@ -223,6 +226,8 @@ if( !class_exists ( 'SPS_Sync' ) ) {
                     'height' => true,
                     'width'  => true,
                 );
+
+                $tags= apply_filters( 'sps_filter_custom_post_tags', $tags );
             }
 
             return $tags;

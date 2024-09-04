@@ -4,7 +4,7 @@ Donate link: https://buymeacoffee.com/kp4coder
 Tags: wp sync post, sync post with multiple sites, post content sync, migrate post content, synchronization post
 Requires at least: 4.5
 Tested up to: 6.6.1
-Stable tag: 1.7
+Stable tag: 1.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -110,6 +110,8 @@ No. WPSiteSync for Content will just synchronize with the one Post content which
 = 1.7 - July 31, 2024 =
 * Fix: Security Update of Authorization to Authenticated
 
+= 1.8 - September 04, 2024 =
+* Fix: Security Update, multiple website sync error solved and add some hooks
 
 == Upgrade notice ==
 
