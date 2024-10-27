@@ -16,7 +16,7 @@ if (!class_exists('SPS_Post_Meta')) {
             global $sps_settings;
             add_meta_box(
                 'sps_websites', 
-                __('Select Websites', 'SPS_txt_domain'), 
+                __('Select Websites', SPS_txt_domain), 
                 array( $this, 'print_meta_fields' ), 
                 $sps_settings->sps_get_post_types(), 
                 'side', 
