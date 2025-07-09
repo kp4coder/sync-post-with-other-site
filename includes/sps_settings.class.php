@@ -28,8 +28,7 @@ if( !class_exists ( 'SPS_Settings' ) ) {
         }
 
     	function sps_save_settings_func( $params = array() ) {
-            $nonce = wp_create_nonce('sps_nonce');
-            if ( ! isset( $_POST['sps_general_option_field'] ) || ! wp_verify_nonce( $_POST['sps_general_option_field'], 'sps_nonce' ) ) {
+            if ( ! isset( $_POST['sps_general_option_field'] ) || ! wp_verify_nonce( $_POST['sps_general_option_field'], 'sps_nonce_action' ) ) {
                 // Nonce verification failed; handle error or exit.
                 wp_die('verification failed. Please try again');
             }

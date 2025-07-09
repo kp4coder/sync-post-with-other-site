@@ -33,6 +33,7 @@ if (!class_exists('SPS_Post_Meta')) {
             echo '<div class="drop_meta_item fullwidth">';
             echo '<div class="inner_meta">';
                 
+            wp_nonce_field('sps_nonce_action', 'sps_select_website');
             if( !empty( $general_option ) && isset( $general_option['sps_host_name'] ) && !empty( $general_option['sps_host_name'] ) ) {
                 $sps_website = get_post_meta($post->ID, 'sps_website', false);
                 $old_meta = ( isset($sps_website['0']) && !empty($sps_website['0']) ) ? $sps_website['0'] : array();

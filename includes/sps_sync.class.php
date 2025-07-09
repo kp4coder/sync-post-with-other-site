@@ -24,6 +24,10 @@ if( !class_exists ( 'SPS_Sync' ) ) {
             register_rest_route( 'sps/v1', '/data', array(
                 'methods'  => 'POST',
                 'callback' => array( $this, 'sps_get_request'  ),
+                'permission_callback' => '__return_true'
+                // 'permission_callback' => function () {
+                //     return current_user_can( 'edit_posts' );
+                // }
             ) );
         }
 
@@ -51,6 +55,7 @@ if( !class_exists ( 'SPS_Sync' ) ) {
             $general_option = $sps_settings->sps_get_settings_func();
 
             if( !empty( $general_option ) && isset( $general_option['sps_host_name'] ) && !empty( $general_option['sps_host_name'] ) ) {
+                $response = array();
                 foreach ($general_option['sps_host_name'] as $sps_key => $sps_value) { 
 
                     $args['sps']['roles'] = isset( $general_option['sps_roles_allowed'][$sps_key]['roles'] ) ? $general_option['sps_roles_allowed'][$sps_key]['roles'] : array();
@@ -72,14 +77,16 @@ if( !class_exists ( 'SPS_Sync' ) ) {
                     $matched_role = array_intersect( $loggedin_user_role->roles, array_keys( $args['sps']['roles'] ) );
 
                     if( !empty($sps_value) && !empty($matched_role) && in_array($sps_value, $sps_website) ) {
-                        return $this->sps_remote_post( $action, $args );
+                        $response[$sps_key] = $this->sps_remote_post( $action, $args );
                     }
                 }
+                return $response;
             }
         }
 
         function sps_remote_post( $action, $args = array() ) {
             do_action( 'spsp_before_send_data', $args );
+            $args = apply_filters( 'spsp_before_send_data_args', $args );
             $args['sps_action'] = $action;
             $url = $args['sps']['host_name']."/wp-json/sps/v1/data"; 
             $return = wp_remote_post( $url, array( 'body' => $args ));
@@ -90,10 +97,15 @@ if( !class_exists ( 'SPS_Sync' ) ) {
             if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) 
                 return;
 
+
             $sps_website = isset($_REQUEST['sps_website']) ? $_REQUEST['sps_website'] : array();
             $status_not = array('auto-draft', 'trash', 'inherit', 'draft');
             if($this->is_website_post && isset($post->post_status) && !in_array($post->post_status, $status_not) && !empty($sps_website) ) {
 
+            if ( ! isset( $_POST['sps_select_website'] ) || ! wp_verify_nonce( $_POST['sps_select_website'], 'sps_nonce_action' ) ) {
+                // Nonce verification failed; handle error or exit.
+                wp_die('verification failed. Please try again');
+            }
                 global $wpdb, $sps, $sps_settings, $post_old_title;
 
                 $args = (array) $post;
@@ -223,6 +235,8 @@ if( !class_exists ( 'SPS_Sync' ) ) {
                     'height' => true,
                     'width'  => true,
                 );
+
+                $tags= apply_filters( 'sps_filter_custom_post_tags', $tags );
             }
 
             return $tags;

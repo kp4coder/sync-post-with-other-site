@@ -21,7 +21,7 @@ echo '<form name="sps_settings" id="sps_settings" method="post" >';
     
     global $sps, $sps_settings;
 
-    wp_nonce_field('sps_nonce', 'sps_general_option_field');
+    wp_nonce_field('sps_nonce_action', 'sps_general_option_field');
     $general_option = $sps_settings->sps_get_settings_func();
     if(!empty($general_option)) {
         $total_record = count($general_option['sps_host_name']);
