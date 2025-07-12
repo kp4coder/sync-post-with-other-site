@@ -7,7 +7,7 @@ if (!class_exists('SPS_Post_Meta')) {
             
             add_action('admin_init', array( $this, 'register_meta_settings' ) );
                 
-            add_action('save_post', array( $this, 'save_meta_fields' ) );
+            add_action('save_post', array( $this, 'save_meta_fields' ), 11 );
                    
         }
 
@@ -60,13 +60,13 @@ if (!class_exists('SPS_Post_Meta')) {
         }
 
         function save_meta_fields( $post_id ) {
+            $sps_websites = array();
             if( isset($_REQUEST['sps_website']) && !empty($_REQUEST['sps_website']) ) {
-                $sps_websites = array();
                 foreach( $_REQUEST['sps_website'] as $sps_webkey => $sps_webvalue ) {
                     $sps_websites[$sps_webkey] = esc_url_raw($sps_webvalue);
                 }
-                update_post_meta($post_id, 'sps_website', $sps_websites);
             }
+            update_post_meta($post_id, 'sps_website', $sps_websites);
         }
         
     }

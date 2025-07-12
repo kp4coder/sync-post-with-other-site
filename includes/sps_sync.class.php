@@ -12,7 +12,7 @@ if( !class_exists ( 'SPS_Sync' ) ) {
             // save tags to post for guttenburg because save post not get the tags in guttenburg.
             add_action( "rest_insert_post", array( $this, "sps_rest_insert_post" ), 10 , 3 );
             
-            add_action( "save_post", array( $this, "sps_save_post" ), 10 , 3 );
+            add_action( "save_post", array( $this, "sps_save_post" ), 12 , 3 );
 
             add_action( "spsp_after_save_data", array( $this, "spsp_grab_content_images" ), 10, 2 );
 
@@ -88,7 +88,7 @@ if( !class_exists ( 'SPS_Sync' ) ) {
             do_action( 'spsp_before_send_data', $args );
             $args = apply_filters( 'spsp_before_send_data_args', $args );
             $args['sps_action'] = $action;
-            $url = $args['sps']['host_name']."/wp-json/sps/v1/data"; 
+            $url = $args['sps']['host_name']."/index.php?rest_route=/sps/v1/data";    // "/wp-json/sps/v1/data"; 
             $return = wp_remote_post( $url, array( 'body' => $args ));
             return $return;
         }
@@ -268,9 +268,11 @@ if( !class_exists ( 'SPS_Sync' ) ) {
             if( !empty($post_id) ) {
                 $post_action = 'edit';
                 $sps_sync_data['ID'] = $post_id;
+                $sps_sync_data['existing_featured_image_id'] = get_post_thumbnail_id($post_id);
                 $post_id = wp_update_post( $sps_sync_data );
             } else {
                 $post_action = 'add';
+                $sps_sync_data['existing_featured_image_id'] = 0;
                 $post_id = wp_insert_post( $sps_sync_data );
             }
 
@@ -319,46 +321,53 @@ if( !class_exists ( 'SPS_Sync' ) ) {
             }
 
             if( isset($sps_sync_data['featured_image']) && !empty($sps_sync_data['featured_image']) ) {
-                
-                $image_url        = $sps_sync_data['featured_image'];
-                $image_arr        = explode( '/', $sps_sync_data['featured_image'] );
-                $image_name       = end($image_arr);
-                $upload_dir       = wp_upload_dir();
-                $unique_file_name = wp_unique_filename( $upload_dir['path'], $image_name );
-                $filename         = basename( $unique_file_name );
 
-                // Check folder permission and define file location
-                if( wp_mkdir_p( $upload_dir['path'] ) ) {
-                    $file = $upload_dir['path'] . '/' . $filename;
+                $actual_fimage_url = get_post_meta($sps_sync_data['existing_featured_image_id'], 'sps_featured_image_url', true);
+                if( $actual_fimage_url == $sps_sync_data['featured_image'] ) { // compare existing featured image url with new url
+                    $attach_id = $sps_sync_data['existing_featured_image_id'];;
                 } else {
-                    $file = $upload_dir['basedir'] . '/' . $filename;
-                }
+                    $image_url        = $sps_sync_data['featured_image'];
+                    $image_arr        = explode( '/', $sps_sync_data['featured_image'] );
+                    $image_name       = end($image_arr);
+                    $upload_dir       = wp_upload_dir();
+                    $unique_file_name = wp_unique_filename( $upload_dir['path'], $image_name );
+                    $filename         = basename( $unique_file_name );
 
-                // Create the image  file on the server
-                $this->grab_image( $image_url, $file);
+                    // Check folder permission and define file location
+                    if( wp_mkdir_p( $upload_dir['path'] ) ) {
+                        $file = $upload_dir['path'] . '/' . $filename;
+                    } else {
+                        $file = $upload_dir['basedir'] . '/' . $filename;
+                    }
 
-                // Check image file type
-                $wp_filetype = wp_check_filetype( $filename, null );
+                    // Create the image  file on the server
+                    $this->grab_image( $image_url, $file);
 
-                // Set attachment data
-                $attachment = array(
-                    'post_mime_type' => $wp_filetype['type'],
-                    'post_title'     => sanitize_file_name( $filename ),
-                    'post_content'   => '',
-                    'post_status'    => 'inherit'
-                );
+                    // Check image file type
+                    $wp_filetype = wp_check_filetype( $filename, null );
 
-                // Create the attachment
-                $attach_id = wp_insert_attachment( $attachment, $file, $post_id );
+                    // Set attachment data
+                    $attachment = array(
+                        'post_mime_type' => $wp_filetype['type'],
+                        'post_title'     => sanitize_file_name( $filename ),
+                        'post_content'   => '',
+                        'post_status'    => 'inherit'
+                    );
 
-                // Include image.php
-                require_once(ABSPATH . 'wp-admin/includes/image.php');
+                    // Create the attachment
+                    $attach_id = wp_insert_attachment( $attachment, $file, $post_id );
 
-                // Define attachment metadata
-                $attach_data = wp_generate_attachment_metadata( $attach_id, $file );
 
-                // Assign metadata to attachment
-                wp_update_attachment_metadata( $attach_id, $attach_data );
+                    // Include image.php
+                    require_once(ABSPATH . 'wp-admin/includes/image.php');
+
+                    // Define attachment metadata
+                    $attach_data = wp_generate_attachment_metadata( $attach_id, $file );
+
+                    // Assign metadata to attachment
+                    wp_update_attachment_metadata( $attach_id, $attach_data );
+                    update_post_meta($attach_id, 'sps_featured_image_url', $sps_sync_data['featured_image']); // Store Featured Image URL for check next time
+                } 
 
                 // And finally assign featured image to post
                 $data = set_post_thumbnail( $post_id, $attach_id );
